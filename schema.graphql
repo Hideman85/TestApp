@@ -1,0 +1,269 @@
+##########################################################
+##          Basic types
+##########################################################
+enum FileAccessLevel {
+  PUBLIC
+  PROTECTED
+  PRIVATE
+}
+
+type File {
+  key: String!
+  level: FileAccessLevel!
+}
+
+type Address {
+  address: String
+  city: String
+  postcode: String
+  country: String
+}
+
+
+##########################################################
+##          User & Team & Organisation
+##########################################################
+type User
+@model
+{
+  id: ID!
+  firstName: String!
+  lastName: String!
+  avatar: File
+  address: Address
+  phoneNumber: String
+}
+
+type Team
+@model
+{
+  id: ID! # team-
+  name: String!
+}
+
+type Organisation
+@model
+{
+  id: ID! # org-
+  name: String!
+  address: Address
+}
+
+
+##########################################################
+##          Organisation Roles
+##########################################################
+union Entity = User | Team
+
+enum OrganisationRoleEnum {
+  NO_ACCESS
+  VIEWING_ACCESS
+  CREATING_ACCESS
+}
+
+type OrganisationRole
+@model
+@key(fields: ["organisationID", "entityID"])
+{
+  entityID: ID!
+  # entity: Entity! @connection(fields: ["entityID"])
+  organisationID: ID!
+  # organisation: Organisation! @connection(fields: ["organisationID"])
+  templateRole: OrganisationRoleEnum!
+  contractRole: OrganisationRoleEnum!
+  team: Team
+  isManager: Boolean
+}
+
+
+##########################################################
+##          InputField & Conditional
+##########################################################
+enum InputFieldTypeEnum {
+  COMPANY
+  PERSON
+  BOOLEAN
+  ONE_LINE_TEXT
+  MULTI_LINE_TEXT
+  NUMBER
+  PHONE
+  AWSDate
+  TIME
+  LIST
+  COMBINED_LIST
+}
+
+type InputField
+@model
+{
+  id: ID! # input-
+  organisationID: ID!
+  # organisation: Organisation! @connection(fields: ["organisationID"])
+  type: InputFieldTypeEnum!
+  name: String!
+  question: String!
+  # Only List & Combined List needs extra configs
+  # List of choices need a dictionary of values
+  values: AWSJSON
+  # Combined list need a text and optionally a base list
+  text: String
+  baseListID: ID
+  # baseList: InputField @connection(fields: ["baseListID"])
+  tags: [String!]!
+}
+
+type Conditional
+@model
+{
+  id: ID! # cond-
+  organisationID: ID!
+  # organisation: Organisation! @connection(fields: ["organisationID"])
+  fieldID: ID!
+  # field: InputField! @connection(fields: ["fieldID"])
+  values: AWSJSON!
+  tags: [String!]!
+}
+
+
+##########################################################
+##          Section
+##########################################################
+type SectionDelta
+@model
+{
+  id: ID! # delta-
+  sectionID: ID!
+  # section: Section! @connection(fields: ["sectionID"])
+  operation: AWSJSON!
+  comment: String
+  changedBy: ID!
+  # changedByUser: User! @connection(fields: "changedBy")
+  acceptedBy: ID
+  # acceptedByUser: User @connection(fields: "acceptedBy")
+  acceptedAWSDate: AWSDate
+}
+
+type SectionText
+@model
+{
+  id: ID! # sectionText-
+  organisationID: ID!
+  # organisation: Organisation! @connection(fields: ["organisationID"])
+  text: String!
+  deltas: [SectionDelta!]! # History & red lining
+  pendingDeltas: [SectionDelta!]! # History & red lining
+  fields: AWSJSON!
+  conditionals: AWSJSON!
+  references: AWSJSON!
+  tags: [String!]!
+}
+
+type SectionFile
+@model
+{
+  id: ID! # sectionFile-
+  organisationID: ID!
+  # organisation: Organisation! @connection(fields: ["organisationID"])
+  file: File!
+  tags: [String!]!
+}
+
+union Section = SectionText | SectionFile
+
+type TemplateSection {
+  sectionID: ID!
+  # section: Section! @connection(fields: ["sectionID"])
+  subSections: [TemplateSection!]!
+}
+
+
+##########################################################
+##          Template
+##########################################################
+type Template
+@model
+{
+  id: ID! # template-
+  name: String!
+  description: String
+  header: ID
+  sections: [TemplateSection!]!
+  footer: ID
+  annexes: [TemplateSection!]!
+  originalTemplate: Template
+}
+
+
+##########################################################
+##          Contract
+##########################################################
+enum ContractStatus {
+  FILLING
+  EDITING
+  SIGNING
+  SIGNED
+  REJECTED
+}
+
+type Contract
+@model
+{
+  id: ID! # contract-
+  name: String!
+  status: ContractStatus!
+  fieldsResponses: AWSJSON!
+  additionalDocuments: [File!]!
+}
+
+
+##########################################################
+##          Instance Roles
+##########################################################
+union Instance = Template | Contract
+
+enum InstanceRoleEnum {
+  NO_ACCESS
+  READ_ACCESS
+  WRITE_ACCESS
+  ADMIN_ACCESS
+}
+
+type InstanceRole
+@model
+@key(fields: ["instanceID", "entityID"])
+{
+  instanceID: ID!
+  # instance: Instance! @connection(fields: ["instanceID"])
+  entityID: ID!
+  # entity: Entity! @connection(fields: ["entityID"])
+  organisationID: ID # used for distinguishe who is visible externally
+  # organisation: Organisation @connection(fields: ["organisationID"])
+  role: InstanceRoleEnum!
+}
+
+
+##########################################################
+##          Commenting
+##########################################################
+union CommentInstance = Template | Contract | SectionText | SectionFile | InputField | Conditional
+
+type Comment
+@model
+@key(name: "byInstanceID", fields: ["instanceID", "organisationID"])
+{
+  id: ID! # comment-
+  userID: ID!
+  # user: User! @connection(fields: ["userID"])
+  instanceID: ID!
+  # instance: CommentInstance! @connection(fields: ["instanceID"])
+  organisationID: ID # used for distinguish inter and external comments
+  # organisation: Organisation @connection(fields: ["organisationID"])
+  text: String!
+}
+
+
+##########################################################
+##          Activity Feed
+##########################################################
+
+
