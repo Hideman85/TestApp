@@ -1,68 +1,113 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Test app using AWS AppSync & DataStorage
 
-## Available Scripts
+## GraphQL schema
+[schema.graphql](schema.graphql)
 
-In the project directory, you can run:
+Issues:
+- No support of Union (nor possibilities to manage IDs ourself)
+- Connections cause issues
+- @auth not enough for user management system
+- Frontend issue, the first try with DataStore come to an infinite loop
 
-### `npm start`
+## Adding API
+### `amplify init`
+```
+Event handler PreInit to be implemented.
+Note: It is recommended to run this command from the root of your app directory
+? Enter a name for the project testapp
+? Enter a name for the environment dev
+? Choose your default editor: IntelliJ IDEA
+? Choose the type of app that you're building javascript
+Please tell us about your project
+? What javascript framework are you using react
+? Source Directory Path:  src
+? Distribution Directory Path: build
+? Build Command:  npm run-script build
+? Start Command: npm run-script start
+Using default provider  awscloudformation
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+For more information on AWS Profiles, see:
+https://docs.aws.amazon.com/cli/latest/userguide/cli-multiple-profiles.html
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+? Do you want to use an AWS profile? Yes
+? Please choose the profile you want to use default
+Adding backend environment dev to AWS Amplify Console app:
+```
 
-### `npm test`
+### `amplify add auth`
+```
+Using service: Cognito, provided by: awscloudformation
+ 
+ The current configured provider is Amazon Cognito. 
+ 
+ Do you want to use the default authentication and security configuration? Default configuration
+ Warning: you will not be able to edit these selections. 
+ How do you want users to be able to sign in? Username
+ Do you want to configure advanced settings? No, I am done.
+```
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### `amplify add api`
+```
+? Please select from one of the below mentioned services: GraphQL
+? Provide API name: testapp
+? Choose the default authorization type for the API Amazon Cognito User Pool
+Use a Cognito user pool configured as a part of this project.
+? Do you want to configure advanced settings for the GraphQL API Yes, I want to make some additional changes.
+? Configure additional auth types? Yes
+? Choose the additional authorization types you want to configure for the API? API Key
+? Configure conflict detection? Yes
+? Select the default resolution strategy Auto Merge
+? Do you have an annotated GraphQL schema? Yes
+? Provide your schema file path: schema.graphql
 
-### `npm run build`
+The following types do not have '@auth' enabled. Consider using @auth with @model
+         - User
+         - Team
+         - Organisation
+         - OrganisationRole
+         - InputField
+         - Conditional
+         - SectionDelta
+         - SectionText
+         - SectionFile
+         - Template
+         - Contract
+         - InstanceRole
+         - Comment
+Learn more about @auth here: https://docs.amplify.aws/cli/graphql-transformer/directives#auth
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+GraphQL schema compiled successfully.
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### `amplify push`
+```
+...
+Deployed
+```
 
-### `npm run eject`
+## Frontend
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- `npm i`
+- `npm run start`
+- Creating a user
+- Login in
+- Click on "Create comment"
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```
+Error saving comment InternalError: "too much recursion"
+    isGraphQLScalarType types.ts:126
+    result utils.ts:82
+    getScalarFields utils.ts:80
+    generateSelectionSet utils.ts:57
+    getNonModelFields utils.ts:143
+    getNonModelFields utils.ts:137
+    getNonModelFields utils.ts:129
+    generateSelectionSet utils.ts:58
+    getNonModelFields utils.ts:143
+    getNonModelFields utils.ts:137
+    getNonModelFields utils.ts:129
+    generateSelectionSet utils.ts:58
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+## Cleanup `amplify delete`
