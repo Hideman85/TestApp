@@ -179,4 +179,39 @@ Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
   > - The user that just be denied should get the information remove from your store the ObjectA and attached roles
   > - And of course that information should not be sent to other subscribers that don't have any access to that object
     
-
+- How to get access to the API ID and the env inside mapping template for a building the generated table name for a BatchGetItem operation resolver?
+  - [Doc about $ctx values](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference.html)
+  - [Doc about BatchGetItem](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-mapping-template-reference-dynamodb.html#aws-appsync-resolver-mapping-template-reference-dynamodb-batch-get-item)
+  - Table name:
+    ```json
+    "TableName": {
+        "Fn::If": [
+            "HasEnvironmentParameter",
+            {
+                "Fn::Join": [
+                    "-",
+                    [
+                        "Comment",
+                        {
+                            "Ref": "GetAttGraphQLAPIApiId"
+                        },
+                        {
+                            "Ref": "env"
+                        }
+                    ]
+                ]
+            },
+            {
+                "Fn::Join": [
+                    "-",
+                    [
+                        "Comment",
+                        {
+                            "Ref": "GetAttGraphQLAPIApiId"
+                        }
+                    ]
+                ]
+            }
+        ]
+    },
+    ```
