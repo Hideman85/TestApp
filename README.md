@@ -124,7 +124,7 @@ The code can be found there: https://github.com/Hideman85/amplify-cli/tree/maste
 No need to build the whole amplify-cli because the actual implementation already support the addition of custom transformer (even if it's not really documented but by looking in the code we can found it).
 
 ### Enabling the custom transformer
-After cloning and compiling the transformer we just need to add one config:
+After cloning and compiling the transformer we just need to add one config in the file `amplify/backend/api/testapp/transform.conf.json`:
 
 ```js
 {
