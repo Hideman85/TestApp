@@ -9,6 +9,9 @@ Issues:
 - @auth not enough for user management system
 - Frontend issue, the first try with DataStore come to an infinite loop
 
+[Investigations & Tries:](#investigations--tries)
+- Creating a @CustomAuth a directive with a custom GrapQL transformer for AmplifyCLI
+
 ## Adding API
 ### `amplify init`
 ```
@@ -111,3 +114,69 @@ Error saving comment InternalError: "too much recursion"
 ```
 
 ## Cleanup `amplify delete`
+
+# Investigations & Tries
+## Custom GraphQL transformer for @CustomAuth
+Started the implementation of a custom transformer for applying additional transformations for our role checking for authorizing a actions.
+
+The code can be found there: https://github.com/Hideman85/amplify-cli/tree/master/packages/graphql-customauth-transformer
+
+No need to build the whole amplify-cli because the actual implementation already support the addition of custom transformer (even if it's not really documented but by looking in the code we can found it).
+
+### Enabling the custom transformer
+After cloning and compiling the transformer we just need to add one config:
+
+```js
+{
+    "Version": 5,
+    "ElasticsearchWarning": true,
+    "ResolverConfig": {
+        "project": {
+            "ConflictHandler": "AUTOMERGE",
+            "ConflictDetection": "VERSION"
+        }
+    },
+    //  Added stuff
+    "transformers": [
+        "/absolute/path/to/amplify-cli/packages/graphql-customauth-transformer/lib/ModelCustomAuthTransformer"
+    ]
+}
+```
+
+### Using the new directive @CustomAuth
+
+```gql
+type Comment
+@model
+@CustomAuth(rules: [{
+  action: CREATE,
+  kind: ORGANISATION_ROLE,
+  allowedRoles: [ORGANISATION_CREATING_ACCESS, ORGANISATION_ADMIN_ACCESS]
+}])
+@key(name: "byInstanceID", fields: ["instanceID", "organisationID"])
+{
+  # ...
+}
+```
+
+### Run `amplify api gql-compile` to see changes
+
+# Open questions
+
+Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
+
+- How to efficiently return only items that the user has access to for a list & sync queries?
+  - Fetching the table (scan) and filtering out the non access item is inefficient (currently made with the actual @auth)
+  - Maybe using BatchGetItem?
+- How to manage subscriptions correctly (with no security issues)?
+  it can be a bit tricky for example:
+    
+  > You have already sync a ObjectA because you have Read access. Now the owner do the update to remove your access.
+  > 
+  > The consequences would be:
+  > 
+  > - For all user that have still access to the document they should get the information that a user access has been removed
+  > - The user that just be denied should get the information remove from your store the ObjectA and attached roles
+  > - And of course that information should not be sent to other subscribers that don't have any access to that object
+    
+
