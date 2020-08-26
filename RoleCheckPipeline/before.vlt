@@ -1,9 +1,0 @@
-############################################
-##      [Start] Stashing needed stuff     ##
-############################################
-$util.qr($ctx.stash.put("instanceID", $ctx.args.id))
-$util.qr($ctx.stash.put("userID", $ctx.identity.claims.sub))
-$util.qr($ctx.stash.put("organisationID", $ctx.identity.claims["custom:currentOrganisation"]))
-############################################
-##      [Start] Stashing needed stuff     ##
-############################################
