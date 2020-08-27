@@ -215,3 +215,8 @@ Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
         ]
     },
     ```
+
+- How to manage dependsOn with amplify-cli?
+  - CREATE_FAILED AWS::AppSync::Resolver The specified functions must exist before referencing them from a resolver.
+  - I need to dependsOn inside the same stack UserGetResolver need to dependsOn UserPipelineFunction resource
+  - More tricky stuff, all generated nested stacks need to dependsOn the stack CommonPipelineFunctions but it looks like the stacks doe not exist yet even in the `after(ctx: TransformerContext)` of the GraphQL transformer

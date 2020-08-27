@@ -46,7 +46,6 @@ function App() {
           try {
             await DataStore.save(
               new models.Comment({
-                id: `my custom ID ${Math.random()}`,
                 userID: 'userID',
                 instanceID: 'instanceID',
                 organisationID: 'organisationID',

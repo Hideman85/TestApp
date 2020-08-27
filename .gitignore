@@ -1,5 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Only because the app is testing purpose and we won't share the same creds/aws account
+amplify
+amplify.json
+
 # dependencies
 /node_modules
 /.pnp
