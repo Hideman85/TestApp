@@ -25,14 +25,8 @@ type Address {
 ##########################################################
 type User
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "id"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates id
-}])
 {
-  id: ID!
+  id: ID! @Set(value: "$ctx.identity.sub")
   firstName: String!
   lastName: String!
   avatar: File
@@ -42,12 +36,6 @@ type User
 
 type Team
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "createdBy"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates createdBy
-}])
 @CustomAuth(rules: [{
   actions: [CREATE, UPDATE, DELETE],
   kind: ORGANISATION_ADMIN,
@@ -60,18 +48,12 @@ type Team
 {
   id: ID! # team-
   name: String!
-  organisationID: ID!
-  createdBy: ID!
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
+  createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 type Organisation
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "createdBy"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates createdBy
-}])
 @CustomAuth(rules: [{
   actions: [CREATE, UPDATE, DELETE],
   kind: ORGANISATION_ADMIN,
@@ -85,7 +67,7 @@ type Organisation
   id: ID! # org-
   name: String!
   address: Address
-  createdBy: ID!
+  createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -102,32 +84,26 @@ enum OrganisationRoleEnum {
 
 type OrganisationRole
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "addedBy"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates addedBy
-}])
 @CustomAuth(rules: [{
   actions: [CREATE, UPDATE, DELETE],
-  kind: ORGANISATION_ROLE,
-  allowedRoles: [ADMIN_ACCESS]
+  kind: ORGANISATION_ADMIN,
+  allowedRoles: []
 }, {
   actions: [GET, LIST, SUBSCRIPTION]
-  kind: ORGANISATION_ROLE,
-  allowedRoles: [VIEWING_ACCESS, CREATING_ACCESS, ADMIN_ACCESS]
+  kind: ORGANISATION_MEMBER,
+  allowedRoles: []
 }])
 @key(fields: ["organisationID", "entityID"])
 {
   entityID: ID!
   # entity: Entity! @connection(fields: ["entityID"])
-  organisationID: ID!
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   templateRole: OrganisationRoleEnum!
   contractRole: OrganisationRoleEnum!
   team: Team
   isManager: Boolean
-  addedBy: ID!
+  addedBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -152,7 +128,7 @@ type InputField
 @model
 {
   id: ID! # input-
-  organisationID: ID!
+  organisationID: ID! @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   type: InputFieldTypeEnum!
   name: String!
@@ -171,7 +147,7 @@ type Conditional
 @model
 {
   id: ID! # cond-
-  organisationID: ID!
+  organisationID: ID! @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   fieldID: ID!
   # field: InputField! @connection(fields: ["fieldID"])
@@ -185,21 +161,15 @@ type Conditional
 ##########################################################
 type SectionDelta
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "changedBy"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates changedBy
-}])
 {
   id: ID! # delta-
-  sectionID: ID!
+  sectionID: ID! @ReadOnly
   # section: Section! @connection(fields: ["sectionID"])
-  operation: AWSJSON!
+  operation: AWSJSON! @ReadOnly
   comment: String
-  changedBy: ID!
+  changedBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
   # changedByUser: User! @connection(fields: "changedBy")
-  acceptedBy: ID
+  acceptedBy: ID @ReadOnly(allowSetWhenEmpty: true)
   # acceptedByUser: User @connection(fields: "acceptedBy")
   acceptedAWSDate: AWSDate
 }
@@ -208,7 +178,7 @@ type SectionText
 @model
 {
   id: ID! # sectionText-
-  organisationID: ID!
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   text: String!
   deltas: [SectionDelta!]! # History & red lining
@@ -223,7 +193,7 @@ type SectionFile
 @model
 {
   id: ID! # sectionFile-
-  organisationID: ID!
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   file: File!
   tags: [String!]!
@@ -243,12 +213,6 @@ type TemplateSection {
 ##########################################################
 type Template
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "createdBy"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates createdBy
-}])
 @CustomAuth(rules: [{
   actions: [CREATE],
   kind: ORGANISATION_ROLE,
@@ -278,7 +242,7 @@ type Template
   footer: ID
   annexes: [TemplateSection!]!
   originalTemplate: Template
-  createdBy: ID!
+  createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -295,12 +259,6 @@ enum ContractStatus {
 
 type Contract
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "createdBy"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates createdBy
-}])
 @CustomAuth(rules: [{
   actions: [CREATE],
   kind: ORGANISATION_ROLE,
@@ -327,7 +285,7 @@ type Contract
   status: ContractStatus!
   fieldsResponses: AWSJSON!
   additionalDocuments: [File!]!
-  createdBy: ID!
+  createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -345,12 +303,6 @@ enum InstanceRoleEnum {
 
 type InstanceRole
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "addedBy"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates addedBy
-}])
 @CustomAuth(rules: [{
   actions: [CREATE, UPDATE, DELETE],
   kind: INSTANCE_ROLE,
@@ -368,10 +320,11 @@ type InstanceRole
   # instance: Instance! @connection(fields: ["instanceID"])
   entityID: ID!
   # entity: Entity! @connection(fields: ["entityID"])
-  organisationID: ID # used for distinguishe who is visible externally
+  # organisationID used for distinguishe who is visible externally
+  organisationID: ID @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]", "null"])
   # organisation: Organisation @connection(fields: ["organisationID"])
   role: InstanceRoleEnum!
-  addedBy: ID!
+  addedBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -382,12 +335,6 @@ union CommentInstance = Template | Contract | SectionText | SectionFile | InputF
 
 type Comment
 @model
-@auth(rules: [{
-  allow: owner
-  ownerField: "userID"
-  identityClaim: "sub"
-  operations: [create] # create it will auto populates userID
-}])
 @CustomAuth(rules: [{
   actions: [CREATE],
   kind: INSTANCE_ROLE,
@@ -407,11 +354,12 @@ type Comment
 @key(name: "byInstanceID", fields: ["instanceID", "organisationID"])
 {
   id: ID! # comment-
-  userID: ID!
+  userID: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
   # user: User! @connection(fields: ["userID"])
-  instanceID: ID!
+  instanceID: ID! @ReadOnly
   # instance: CommentInstance! @connection(fields: ["instanceID"])
-  organisationID: ID # used for distinguish inter and external comments
+  # organisationID used for distinguish inter and external comments
+  organisationID: ID @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]", "null"])
   # organisation: Organisation @connection(fields: ["organisationID"])
   text: String!
 }

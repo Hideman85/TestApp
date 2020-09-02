@@ -63,6 +63,9 @@ Use a Cognito user pool configured as a part of this project.
 ? Do you have an annotated GraphQL schema? Yes
 ? Provide your schema file path: schema.graphql
 
+- schema.graphql contains basic data structure without any authorization restriction
+- schemaWithCustomAuth.graphql contains also custom GraphQL directives and tranformers
+
 The following types do not have '@auth' enabled. Consider using @auth with @model
          - User
          - Team
@@ -138,28 +141,58 @@ After cloning and compiling the transformer we just need to add one config in th
     },
     //  Added stuff
     "transformers": [
+        "/absolute/path/to/amplify-cli/packages/graphql-customauth-transformer/lib/SetTransformer",
+        "/absolute/path/to/amplify-cli/packages/graphql-customauth-transformer/lib/CheckTransformer",
+        "/absolute/path/to/amplify-cli/packages/graphql-customauth-transformer/lib/ReadOnlyTransformer",
         "/absolute/path/to/amplify-cli/packages/graphql-customauth-transformer/lib/ModelCustomAuthTransformer"
     ]
 }
 ```
 
-### Using the new directive @CustomAuth
+### Using the new directives @CustomAuth, @ReadOnly, @Set and @Check
 
 ```gql
 type Comment
 @model
 @CustomAuth(rules: [{
-  action: CREATE,
-  kind: ORGANISATION_ROLE,
-  allowedRoles: [ORGANISATION_CREATING_ACCESS, ORGANISATION_ADMIN_ACCESS]
+  actions: [CREATE],
+  kind: INSTANCE_ROLE,
+  allowedRoles: [COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS]
+  instanceField: "instanceID"
+}, {
+  actions: [UPDATE, DELETE],
+  kind: INSTANCE_ROLE,
+  allowedRoles: [ADMIN_ACCESS]
+  instanceField: "instanceID"
+}, {
+  actions: [GET, LIST, SUBSCRIPTION]
+  kind: INSTANCE_ROLE,
+  allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS]
+  instanceField: "instanceID"
 }])
 @key(name: "byInstanceID", fields: ["instanceID", "organisationID"])
 {
-  # ...
+  id: ID! # comment-
+  userID: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
+  # user: User! @connection(fields: ["userID"])
+  instanceID: ID! @ReadOnly
+  # instance: CommentInstance! @connection(fields: ["instanceID"])
+  # organisationID used for distinguish inter and external comments
+  organisationID: ID @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]", "null"])
+  # organisation: Organisation @connection(fields: ["organisationID"])
+  text: String!
 }
 ```
 
 ### Run `amplify api gql-compile` to see changes
+
+### Deployment
+For deploying we need our changes made on [amplify-cli](https://github.com/Hideman85/amplify-cli)
+
+- Build `amplify-cli` in the cloned directory run `yarn setup-dev`
+- After amplify was built we have `amplify-dev` command available make sure `yarn global bin` is in your PATH variable to able to find the new command
+- Make sure to change the config [above](#using-the-new-directives-customAuth-readonly-set-and-check) with the correct absolute path to `amplify-cli`
+- Now on this repo directory you can run `amplify-dev push`
 
 # Open questions
 
@@ -219,4 +252,13 @@ Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
 - How to manage dependsOn with amplify-cli?
   - CREATE_FAILED AWS::AppSync::Resolver The specified functions must exist before referencing them from a resolver.
   - I need to dependsOn inside the same stack UserGetResolver need to dependsOn UserPipelineFunction resource
+  ```js
+  //  The resolver need to wait the creation of the pipeline function
+  if (typeof resolver.DependsOn === 'string') {
+    resolver.DependsOn = [resolver.DependsOn]
+  } else if (!Array.isArray(resolver.DependsOn)) {
+    resolver.DependsOn = []
+  }
+  resolver.DependsOn.push(pipelineFunctionID)
+  ```
   - More tricky stuff, all generated nested stacks need to dependsOn the stack CommonPipelineFunctions but it looks like the stacks doe not exist yet even in the `after(ctx: TransformerContext)` of the GraphQL transformer
