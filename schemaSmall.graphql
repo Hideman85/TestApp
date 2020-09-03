@@ -1,0 +1,32 @@
+type User @model {
+  id: ID! @Set(value: "$ctx.identity.sub")
+  firstName: String!
+  lastName: String!
+}
+
+type Blog @model {
+  id: ID!
+  name: String!
+  posts: [Post] @connection(keyName: "byBlog", fields: ["id"])
+  userID: ID @ReadOnly @Set(value: "$ctx.identity.sub")
+  # user: User @connection(fields: ["userID"])
+}
+
+type Post @model @key(name: "byBlog", fields: ["blogID"]) {
+  id: ID!
+  title: String!
+  blogID: ID! @ReadOnly
+  blog: Blog @connection(fields: ["blogID"])
+  comments: [Comment] @connection(keyName: "byPost", fields: ["id"])
+  userID: ID @ReadOnly @Set(value: "$ctx.identity.sub")
+  # user: User @connection(fields: ["userID"])
+}
+
+type Comment @model @key(name: "byPost", fields: ["postID", "content"]) {
+  id: ID!
+  postID: ID! @ReadOnly
+  post: Post @connection(fields: ["postID"])
+  content: String!
+  userID: ID @ReadOnly @Set(value: "$ctx.identity.sub")
+  # user: User @connection(fields: ["userID"])
+}

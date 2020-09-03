@@ -23,31 +23,6 @@ export const schema = {
                     "type": "String",
                     "isRequired": true,
                     "attributes": []
-                },
-                "avatar": {
-                    "name": "avatar",
-                    "isArray": false,
-                    "type": {
-                        "nonModel": "File"
-                    },
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "address": {
-                    "name": "address",
-                    "isArray": false,
-                    "type": {
-                        "nonModel": "Address"
-                    },
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "phoneNumber": {
-                    "name": "phoneNumber",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
                 }
             },
             "syncable": true,
@@ -59,35 +34,8 @@ export const schema = {
                 }
             ]
         },
-        "Team": {
-            "name": "Team",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "name": {
-                    "name": "name",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "Teams",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                }
-            ]
-        },
-        "Organisation": {
-            "name": "Organisation",
+        "Blog": {
+            "name": "Blog",
             "fields": {
                 "id": {
                     "name": "id",
@@ -103,164 +51,29 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "address": {
-                    "name": "address",
-                    "isArray": false,
+                "posts": {
+                    "name": "posts",
+                    "isArray": true,
                     "type": {
-                        "nonModel": "Address"
+                        "model": "Post"
                     },
                     "isRequired": false,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "Organisations",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                }
-            ]
-        },
-        "OrganisationRole": {
-            "name": "OrganisationRole",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "entityID": {
-                    "name": "entityID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "organisationID": {
-                    "name": "organisationID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "templateRole": {
-                    "name": "templateRole",
-                    "isArray": false,
-                    "type": {
-                        "enum": "OrganisationRoleEnum"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "contractRole": {
-                    "name": "contractRole",
-                    "isArray": false,
-                    "type": {
-                        "enum": "OrganisationRoleEnum"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "isManager": {
-                    "name": "isManager",
-                    "isArray": false,
-                    "type": "Boolean",
-                    "isRequired": false,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "OrganisationRoles",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "fields": [
-                            "organisationID",
-                            "entityID"
-                        ]
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "blog"
                     }
-                }
-            ]
-        },
-        "InputField": {
-            "name": "InputField",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
                 },
-                "organisationID": {
-                    "name": "organisationID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "type": {
-                    "name": "type",
-                    "isArray": false,
-                    "type": {
-                        "enum": "InputFieldTypeEnum"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "name": {
-                    "name": "name",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "question": {
-                    "name": "question",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "values": {
-                    "name": "values",
-                    "isArray": false,
-                    "type": "AWSJSON",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "text": {
-                    "name": "text",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "baseListID": {
-                    "name": "baseListID",
+                "userID": {
+                    "name": "userID",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
-                    "attributes": []
-                },
-                "tags": {
-                    "name": "tags",
-                    "isArray": true,
-                    "type": "String",
-                    "isRequired": true,
                     "attributes": []
                 }
             },
             "syncable": true,
-            "pluralName": "InputFields",
+            "pluralName": "Blogs",
             "attributes": [
                 {
                     "type": "model",
@@ -268,8 +81,8 @@ export const schema = {
                 }
             ]
         },
-        "Conditional": {
-            "name": "Conditional",
+        "Post": {
+            "name": "Post",
             "fields": {
                 "id": {
                     "name": "id",
@@ -278,372 +91,49 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "organisationID": {
-                    "name": "organisationID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "fieldID": {
-                    "name": "fieldID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "values": {
-                    "name": "values",
-                    "isArray": false,
-                    "type": "AWSJSON",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "tags": {
-                    "name": "tags",
-                    "isArray": true,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "Conditionals",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                }
-            ]
-        },
-        "SectionDelta": {
-            "name": "SectionDelta",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "sectionID": {
-                    "name": "sectionID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "operation": {
-                    "name": "operation",
-                    "isArray": false,
-                    "type": "AWSJSON",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "comment": {
-                    "name": "comment",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "changedBy": {
-                    "name": "changedBy",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "acceptedBy": {
-                    "name": "acceptedBy",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "acceptedAWSDate": {
-                    "name": "acceptedAWSDate",
-                    "isArray": false,
-                    "type": "AWSDate",
-                    "isRequired": false,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "SectionDeltas",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                }
-            ]
-        },
-        "SectionText": {
-            "name": "SectionText",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "organisationID": {
-                    "name": "organisationID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "text": {
-                    "name": "text",
+                "title": {
+                    "name": "title",
                     "isArray": false,
                     "type": "String",
                     "isRequired": true,
                     "attributes": []
                 },
-                "fields": {
-                    "name": "fields",
-                    "isArray": false,
-                    "type": "AWSJSON",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "conditionals": {
-                    "name": "conditionals",
-                    "isArray": false,
-                    "type": "AWSJSON",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "references": {
-                    "name": "references",
-                    "isArray": false,
-                    "type": "AWSJSON",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "tags": {
-                    "name": "tags",
-                    "isArray": true,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "SectionTexts",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                }
-            ]
-        },
-        "SectionFile": {
-            "name": "SectionFile",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "organisationID": {
-                    "name": "organisationID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "file": {
-                    "name": "file",
+                "blog": {
+                    "name": "blog",
                     "isArray": false,
                     "type": {
-                        "nonModel": "File"
+                        "model": "Blog"
                     },
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "tags": {
-                    "name": "tags",
-                    "isArray": true,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "SectionFiles",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                }
-            ]
-        },
-        "Template": {
-            "name": "Template",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "name": {
-                    "name": "name",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "description": {
-                    "name": "description",
-                    "isArray": false,
-                    "type": "String",
                     "isRequired": false,
-                    "attributes": []
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "blogID"
+                    }
                 },
-                "header": {
-                    "name": "header",
+                "comments": {
+                    "name": "comments",
+                    "isArray": true,
+                    "type": {
+                        "model": "Comment"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": "post"
+                    }
+                },
+                "userID": {
+                    "name": "userID",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
                     "attributes": []
-                },
-                "sections": {
-                    "name": "sections",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "TemplateSection"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "footer": {
-                    "name": "footer",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "annexes": {
-                    "name": "annexes",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "TemplateSection"
-                    },
-                    "isRequired": true,
-                    "attributes": []
                 }
             },
             "syncable": true,
-            "pluralName": "Templates",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                }
-            ]
-        },
-        "Contract": {
-            "name": "Contract",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "name": {
-                    "name": "name",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "status": {
-                    "name": "status",
-                    "isArray": false,
-                    "type": {
-                        "enum": "ContractStatus"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "fieldsResponses": {
-                    "name": "fieldsResponses",
-                    "isArray": false,
-                    "type": "AWSJSON",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "additionalDocuments": {
-                    "name": "additionalDocuments",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "File"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "Contracts",
-            "attributes": [
-                {
-                    "type": "model",
-                    "properties": {}
-                }
-            ]
-        },
-        "InstanceRole": {
-            "name": "InstanceRole",
-            "fields": {
-                "id": {
-                    "name": "id",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "instanceID": {
-                    "name": "instanceID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "entityID": {
-                    "name": "entityID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "organisationID": {
-                    "name": "organisationID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "role": {
-                    "name": "role",
-                    "isArray": false,
-                    "type": {
-                        "enum": "InstanceRoleEnum"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                }
-            },
-            "syncable": true,
-            "pluralName": "InstanceRoles",
+            "pluralName": "Posts",
             "attributes": [
                 {
                     "type": "model",
@@ -652,9 +142,9 @@ export const schema = {
                 {
                     "type": "key",
                     "properties": {
+                        "name": "byBlog",
                         "fields": [
-                            "instanceID",
-                            "entityID"
+                            "blogID"
                         ]
                     }
                 }
@@ -670,32 +160,31 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "post": {
+                    "name": "post",
+                    "isArray": false,
+                    "type": {
+                        "model": "Post"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetName": "postID"
+                    }
+                },
+                "content": {
+                    "name": "content",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
                 "userID": {
                     "name": "userID",
                     "isArray": false,
                     "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "instanceID": {
-                    "name": "instanceID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "organisationID": {
-                    "name": "organisationID",
-                    "isArray": false,
-                    "type": "ID",
                     "isRequired": false,
-                    "attributes": []
-                },
-                "text": {
-                    "name": "text",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
                     "attributes": []
                 }
             },
@@ -709,145 +198,17 @@ export const schema = {
                 {
                     "type": "key",
                     "properties": {
-                        "name": "byInstanceID",
+                        "name": "byPost",
                         "fields": [
-                            "instanceID",
-                            "organisationID"
+                            "postID",
+                            "content"
                         ]
                     }
                 }
             ]
         }
     },
-    "enums": {
-        "FileAccessLevel": {
-            "name": "FileAccessLevel",
-            "values": [
-                "PUBLIC",
-                "PROTECTED",
-                "PRIVATE"
-            ]
-        },
-        "OrganisationRoleEnum": {
-            "name": "OrganisationRoleEnum",
-            "values": [
-                "NO_ACCESS",
-                "VIEWING_ACCESS",
-                "CREATING_ACCESS"
-            ]
-        },
-        "InputFieldTypeEnum": {
-            "name": "InputFieldTypeEnum",
-            "values": [
-                "COMPANY",
-                "PERSON",
-                "BOOLEAN",
-                "ONE_LINE_TEXT",
-                "MULTI_LINE_TEXT",
-                "NUMBER",
-                "PHONE",
-                "AWSDate",
-                "TIME",
-                "LIST",
-                "COMBINED_LIST"
-            ]
-        },
-        "ContractStatus": {
-            "name": "ContractStatus",
-            "values": [
-                "FILLING",
-                "EDITING",
-                "SIGNING",
-                "SIGNED",
-                "REJECTED"
-            ]
-        },
-        "InstanceRoleEnum": {
-            "name": "InstanceRoleEnum",
-            "values": [
-                "NO_ACCESS",
-                "READ_ACCESS",
-                "WRITE_ACCESS",
-                "ADMIN_ACCESS"
-            ]
-        }
-    },
-    "nonModels": {
-        "File": {
-            "name": "File",
-            "fields": {
-                "key": {
-                    "name": "key",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "level": {
-                    "name": "level",
-                    "isArray": false,
-                    "type": {
-                        "enum": "FileAccessLevel"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
-        },
-        "Address": {
-            "name": "Address",
-            "fields": {
-                "address": {
-                    "name": "address",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "city": {
-                    "name": "city",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "postcode": {
-                    "name": "postcode",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "country": {
-                    "name": "country",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                }
-            }
-        },
-        "TemplateSection": {
-            "name": "TemplateSection",
-            "fields": {
-                "sectionID": {
-                    "name": "sectionID",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": true,
-                    "attributes": []
-                },
-                "subSections": {
-                    "name": "subSections",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "TemplateSection"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                }
-            }
-        }
-    },
-    "version": "63a4dcbcc5288d5331bf1701462842af"
+    "enums": {},
+    "nonModels": {},
+    "version": "c526d6939e140201491d9a0cefd5a5fe"
 };
