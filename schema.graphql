@@ -71,7 +71,8 @@ type OrganisationRole
   # organisation: Organisation! @connection(fields: ["organisationID"])
   templateRole: OrganisationRoleEnum!
   contractRole: OrganisationRoleEnum!
-  team: Team
+  teamID: ID
+  # team: Organisation! @connection(fields: ["teamID"])
   isManager: Boolean
 }
 
@@ -140,7 +141,7 @@ type SectionDelta
   # changedByUser: User! @connection(fields: "changedBy")
   acceptedBy: ID
   # acceptedByUser: User @connection(fields: "acceptedBy")
-  acceptedAWSDate: AWSDate
+  acceptedDate: AWSDate
 }
 
 type SectionText
@@ -150,8 +151,8 @@ type SectionText
   organisationID: ID!
   # organisation: Organisation! @connection(fields: ["organisationID"])
   text: String!
-  deltas: [SectionDelta!]! # History & red lining
-  pendingDeltas: [SectionDelta!]! # History & red lining
+  # deltas: [ID!]! # History & red lining
+  # pendingDeltas: [ID!]! # History & red lining
   fields: AWSJSON!
   conditionals: AWSJSON!
   references: AWSJSON!
@@ -190,7 +191,8 @@ type Template
   sections: [TemplateSection!]!
   footer: ID
   annexes: [TemplateSection!]!
-  originalTemplate: Template
+  originalTemplateID: ID
+  # originalTemplate: Template @connection(fields: ["originalTemplateID"])
 }
 
 

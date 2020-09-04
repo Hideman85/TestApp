@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
+import '@aws-amplify/ui/dist/style.css';
 import { DataStore } from '@aws-amplify/datastore'
 import Amplify from '@aws-amplify/core'
 import * as models from './models'
@@ -53,11 +54,11 @@ const ListItem = ({ modelKey, item }) => {
   }, [item])
 
   const update = async () => {
-    await DataStore.save(models[modelKey].copyOf(item, updated => ({
-      ...updated,
-      ...JSON.parse(data),
-      id: updated.id
-    })))
+    await DataStore.save(models[modelKey].copyOf(item, updated => {
+      Object.entries(JSON.parse(data)).forEach(([key, value]) => {
+        updated[key] = value
+      })
+    }))
   }
 
   const _delete = async () => {
