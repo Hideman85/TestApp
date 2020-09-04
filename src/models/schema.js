@@ -185,15 +185,6 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "fields": [
-                            "organisationID",
-                            "entityID"
-                        ]
-                    }
                 }
             ]
         },
@@ -521,29 +512,11 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "sections": {
-                    "name": "sections",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "TemplateSection"
-                    },
-                    "isRequired": true,
-                    "attributes": []
-                },
                 "footer": {
                     "name": "footer",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
-                    "attributes": []
-                },
-                "annexes": {
-                    "name": "annexes",
-                    "isArray": true,
-                    "type": {
-                        "nonModel": "TemplateSection"
-                    },
-                    "isRequired": true,
                     "attributes": []
                 },
                 "originalTemplateID": {
@@ -662,15 +635,6 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "fields": [
-                            "instanceID",
-                            "entityID"
-                        ]
-                    }
                 }
             ]
         },
@@ -863,5 +827,5 @@ export const schema = {
             }
         }
     },
-    "version": "d3d16b8c44302542facbcbaedd6a9e8a"
+    "version": "07998d11731b01fcb71945c064d899b9"
 };

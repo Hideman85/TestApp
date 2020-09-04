@@ -11,12 +11,24 @@ Amplify.configure(awsconfig)
 
 window.LOG_LEVEL = 'DEBUG'
 
+const typesGen = {
+  AWSJSON: '{}',
+  AWSDate: (new Date()).toISOString(),
+  Boolean: true
+}
+
 const genModel = modelKey => {
   const data = {}
 
   Object.keys(schema.models[modelKey].fields).forEach(key => {
     if (typeof schema.models[modelKey].fields[key].type === 'string') {
-      data[key] = schema.models[modelKey].fields[key].type
+      const field = schema.models[modelKey].fields[key]
+
+      data[key] = typesGen[field.type] || field.type
+
+      if (field.isArray) {
+        data[key] = [data[key]]
+      }
     }
   })
 

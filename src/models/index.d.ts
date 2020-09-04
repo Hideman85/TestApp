@@ -161,9 +161,7 @@ export declare class Template {
   readonly name: string;
   readonly description?: string;
   readonly header?: string;
-  readonly sections: TemplateSection[];
   readonly footer?: string;
-  readonly annexes: TemplateSection[];
   readonly originalTemplateID?: string;
   constructor(init: ModelInit<Template>);
   static copyOf(source: Template, mutator: (draft: MutableModel<Template>) => MutableModel<Template> | void): Template;

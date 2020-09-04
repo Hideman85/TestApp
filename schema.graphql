@@ -63,8 +63,9 @@ enum OrganisationRoleEnum {
 
 type OrganisationRole
 @model
-@key(fields: ["organisationID", "entityID"])
+# @key(fields: ["organisationID", "entityID"]) # TODO: Uncomment once fixed
 {
+  id: ID! # TODO: Remove once fixed
   entityID: ID!
   # entity: Entity! @connection(fields: ["entityID"])
   organisationID: ID!
@@ -188,9 +189,9 @@ type Template
   name: String!
   description: String
   header: ID
-  sections: [TemplateSection!]!
+  # sections: [TemplateSection!]!
   footer: ID
-  annexes: [TemplateSection!]!
+  # annexes: [TemplateSection!]!
   originalTemplateID: ID
   # originalTemplate: Template @connection(fields: ["originalTemplateID"])
 }
@@ -232,8 +233,9 @@ enum InstanceRoleEnum {
 
 type InstanceRole
 @model
-@key(fields: ["instanceID", "entityID"])
+# @key(fields: ["instanceID", "entityID"]) # TODO: Uncomment once fixed
 {
+  id: ID! # TODO: Remove once fixed
   instanceID: ID!
   # instance: Instance! @connection(fields: ["instanceID"])
   entityID: ID!
