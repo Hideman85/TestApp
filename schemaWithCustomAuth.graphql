@@ -101,7 +101,8 @@ type OrganisationRole
   # organisation: Organisation! @connection(fields: ["organisationID"])
   templateRole: OrganisationRoleEnum!
   contractRole: OrganisationRoleEnum!
-  team: Team
+  teamID: ID
+  # team: Team @connection(fields: ["teamID"])
   isManager: Boolean
   addedBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
@@ -181,8 +182,8 @@ type SectionText
   organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   text: String!
-  deltas: [SectionDelta!]! # History & red lining
-  pendingDeltas: [SectionDelta!]! # History & red lining
+  # deltas: [SectionDelta!]! # History & red lining
+  # pendingDeltas: [SectionDelta!]! # History & red lining
   fields: AWSJSON!
   conditionals: AWSJSON!
   references: AWSJSON!
@@ -204,7 +205,23 @@ union Section = SectionText | SectionFile
 type TemplateSection {
   sectionID: ID!
   # section: Section! @connection(fields: ["sectionID"])
-  subSections: [TemplateSection!]!
+  subSections: [TemplateSection1!]!
+}
+# DataStore does not work with recursive models
+type TemplateSection1 {
+  sectionID: ID!
+  # section: Section! @connection(fields: ["sectionID"])
+  subSections: [TemplateSection2!]!
+}
+type TemplateSection2 {
+  sectionID: ID!
+  # section: Section! @connection(fields: ["sectionID"])
+  subSections: [TemplateSection3!]!
+}
+type TemplateSection3 {
+  sectionID: ID!
+  # section: Section! @connection(fields: ["sectionID"])
+  subSections: [String!]!
 }
 
 
@@ -241,7 +258,8 @@ type Template
   sections: [TemplateSection!]!
   footer: ID
   annexes: [TemplateSection!]!
-  originalTemplate: Template
+  originalTemplateID: ID
+  # originalTemplate: Template @connection(fields: ["originalTemplateID"])
   createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
