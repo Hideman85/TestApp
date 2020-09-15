@@ -24,50 +24,73 @@ type Address {
 ##          User & Team & Organisation
 ##########################################################
 type User
-@model
+@model(mutations: { create: "createUser", update: "updateUser" })
+@auth(rules: [{
+  allow: owner,
+  provider: userPools,
+  ownerField: "id",
+  identityClaim: "sub",
+  operations: [update]
+}])
 {
-  id: ID! @Set(value: "$ctx.identity.sub")
+  id: ID! @Check(values: ["$ctx.identity.sub"])
   firstName: String!
   lastName: String!
   avatar: File
-  address: Address
-  phoneNumber: String
+  address: Address # @FilterOut(cond: { op: NOT_EQUAL, values: ["$ctx.identity.sub"] })
+  phoneNumber: String # @FilterOut(cond: { op: NOT_EQUAL, values: ["$ctx.identity.sub"] })
+  currentOrganisationID: ID # @ReadOnly # set by a lambda
 }
 
 type Team
 @model
-@CustomAuth(rules: [{
-  actions: [CREATE, UPDATE, DELETE],
-  kind: ORGANISATION_ADMIN,
-  allowedRoles: []
-}, {
-  actions: [GET, LIST, SUBSCRIPTION]
-  kind: ORGANISATION_MEMBER,
-  allowedRoles: []
-}])
+@CustomAuth(
+  rules: [{
+    actions: [CREATE, UPDATE, DELETE],
+    kind: ORGANISATION_ADMIN,
+    allowedRoles: []
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: ORGANISATION_MEMBER,
+    allowedRoles: []
+  }],
+  listConfig: {
+    kind: LIST_BY_ORGANISATION_ID,
+    listIndex: "byOrganisationID",
+    organisationID: "organisationID"
+  }
+)
+@key(name: "byOrganisationID", fields: ["organisationID"])
 {
   id: ID! # team-
   name: String!
-  organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
-  createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.stash.userData.currentOrganisationID"])
+  createdBy: ID @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 type Organisation
 @model
-@CustomAuth(rules: [{
-  actions: [CREATE, UPDATE, DELETE],
-  kind: ORGANISATION_ADMIN,
-  allowedRoles: []
-}, {
-  actions: [GET, LIST, SUBSCRIPTION]
-  kind: ORGANISATION_MEMBER,
-  allowedRoles: []
-}])
+@CustomAuth(
+  rules: [{
+    actions: [CREATE, UPDATE, DELETE],
+    kind: ORGANISATION_ADMIN,
+    allowedRoles: []
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: ORGANISATION_MEMBER,
+    allowedRoles: []
+  }],
+  #  listConfig: {
+  #    kind: LIST_BY_ORGANISATION_ID,
+  #    listIndex: null,
+  #    organisationID: "id"
+  #  }
+)
 {
   id: ID! # org-
   name: String!
   address: Address
-  createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
+  createdBy: ID @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -75,6 +98,7 @@ type Organisation
 ##          Organisation Roles
 ##########################################################
 union Entity = User | Team
+enum EnityTypeEnum { User, Team }
 
 enum OrganisationRoleEnum {
   NO_ACCESS
@@ -84,27 +108,35 @@ enum OrganisationRoleEnum {
 
 type OrganisationRole
 @model
-@CustomAuth(rules: [{
-  actions: [CREATE, UPDATE, DELETE],
-  kind: ORGANISATION_ADMIN,
-  allowedRoles: []
-}, {
-  actions: [GET, LIST, SUBSCRIPTION]
-  kind: ORGANISATION_MEMBER,
-  allowedRoles: []
-}])
+@CustomAuth(
+  rules: [{
+    actions: [CREATE, UPDATE, DELETE],
+    kind: ORGANISATION_ADMIN,
+    allowedRoles: []
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: ORGANISATION_MEMBER,
+    allowedRoles: []
+  }],
+  listConfig: {
+    kind: LIST_BY_ORGANISATION_ID,
+    listIndex: null,
+    organisationID: "organisationID"
+  }
+)
 @key(fields: ["organisationID", "entityID"])
 {
+  id: ID! # TODO: Remove this attribute
   entityID: ID!
   # entity: Entity! @connection(fields: ["entityID"])
-  organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.stash.userData.currentOrganisationID"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   templateRole: OrganisationRoleEnum!
   contractRole: OrganisationRoleEnum!
   teamID: ID
   # team: Team @connection(fields: ["teamID"])
   isManager: Boolean
-  addedBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
+  addedBy: ID @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -127,9 +159,29 @@ enum InputFieldTypeEnum {
 
 type InputField
 @model
+@CustomAuth(
+  rules: [{
+    actions: [CREATE, UPDATE],
+    kind: ORGANISATION_MEMBER,
+    allowedRoles: []
+  }, {
+    actions: [DELETE],
+    kind: ORGANISATION_ADMIN,
+    allowedRoles: []
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: ORGANISATION_MEMBER,
+    allowedRoles: []
+  }],
+  listConfig: {
+    kind: LIST_BY_ORGANISATION_ID,
+    listIndex: null,
+    organisationID: "organisationID"
+  }
+)
 {
   id: ID! # input-
-  organisationID: ID! @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.stash.userData.currentOrganisationID"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   type: InputFieldTypeEnum!
   name: String!
@@ -146,9 +198,29 @@ type InputField
 
 type Conditional
 @model
+@CustomAuth(
+  rules: [{
+    actions: [CREATE, UPDATE],
+    kind: ORGANISATION_MEMBER,
+    allowedRoles: []
+  }, {
+    actions: [DELETE],
+    kind: ORGANISATION_ADMIN,
+    allowedRoles: []
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: ORGANISATION_MEMBER,
+    allowedRoles: []
+  }],
+  listConfig: {
+    kind: LIST_BY_ORGANISATION_ID,
+    listIndex: null,
+    organisationID: "organisationID"
+  }
+)
 {
   id: ID! # cond-
-  organisationID: ID! @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.stash.userData.currentOrganisationID"])
   # organisation: Organisation! @connection(fields: ["organisationID"])
   fieldID: ID!
   # field: InputField! @connection(fields: ["fieldID"])
@@ -162,13 +234,17 @@ type Conditional
 ##########################################################
 type SectionDelta
 @model
+@CustomAuth(subModel: {
+  kind: FULLY_TRANSITIVE,
+  parentType: "SectionText"
+})
+@key(name: "byRootID", fields: ["rootID", "id"])
 {
-  id: ID! # delta-
-  sectionID: ID! @ReadOnly
-  # section: Section! @connection(fields: ["sectionID"])
+  id: ID! # parentID:delta-
+  rootID: ID! @ReadOnly
   operation: AWSJSON! @ReadOnly
   comment: String
-  changedBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
+  changedBy: ID @ReadOnly @Set(value: "$ctx.identity.sub")
   # changedByUser: User! @connection(fields: "changedBy")
   acceptedBy: ID @ReadOnly(allowSetWhenEmpty: true)
   # acceptedByUser: User @connection(fields: "acceptedBy")
@@ -177,10 +253,14 @@ type SectionDelta
 
 type SectionText
 @model
+@CustomAuth(subModel: {
+  kind: FULLY_TRANSITIVE,
+  parentType: "Template"
+})
+@key(name: "byRootID", fields: ["rootID", "id"])
 {
-  id: ID! # sectionText-
-  organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
-  # organisation: Organisation! @connection(fields: ["organisationID"])
+  id: ID! # parentID:sectionText-
+  rootID: ID! @ReadOnly
   text: String!
   # deltas: [SectionDelta!]! # History & red lining
   # pendingDeltas: [SectionDelta!]! # History & red lining
@@ -188,16 +268,28 @@ type SectionText
   conditionals: AWSJSON!
   references: AWSJSON!
   tags: [String!]!
+
+  # On the case of a copy
+  originalSectionTextID: ID @ReadOnly # Set by a lambda
+  # originalSectionText: SectionText @connection(fields: ["originalSectionTextID"])
 }
 
 type SectionFile
 @model
+@CustomAuth(subModel: {
+  kind: FULLY_TRANSITIVE,
+  parentType: "Template"
+})
+@key(name: "byRootID", fields: ["rootID", "id"])
 {
-  id: ID! # sectionFile-
-  organisationID: ID! @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]"])
-  # organisation: Organisation! @connection(fields: ["organisationID"])
+  id: ID! # parentID:sectionFile-
+  rootID: ID! @ReadOnly
   file: File!
   tags: [String!]!
+
+  # On the case of a copy
+  originalSectionFileID: ID @ReadOnly # Set by a lambda
+  # originalSectionFile: SectionFile @connection(fields: ["originalSectionFileID"])
 }
 
 union Section = SectionText | SectionFile
@@ -230,37 +322,51 @@ type TemplateSection3 {
 ##########################################################
 type Template
 @model
-@CustomAuth(rules: [{
-  actions: [CREATE],
-  kind: ORGANISATION_ROLE,
-  allowedRoles: [CREATING_ACCESS, ADMIN_ACCESS]
-}, {
-  actions: [UPDATE],
-  kind: INSTANCE_ROLE,
-  allowedRoles: [EDITING_ACCESS, ADMIN_ACCESS]
-  instanceField: "instanceID"
-}, {
-  actions: [DELETE],
-  kind: INSTANCE_ROLE,
-  allowedRoles: [ADMIN_ACCESS]
-  instanceField: "instanceID"
-}, {
-  actions: [GET, LIST, SUBSCRIPTION]
-  kind: INSTANCE_ROLE,
-  allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS]
-  instanceField: "instanceID"
-}])
+@CustomAuth(
+  rules: [{
+    actions: [CREATE],
+    kind: ORGANISATION_ROLE,
+    allowedRoles: [CREATING_ACCESS, ADMIN_ACCESS],
+  }, {
+    actions: [UPDATE],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [EDITING_ACCESS, ADMIN_ACCESS],
+    instanceField: "id"
+  }, {
+    actions: [DELETE],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [ADMIN_ACCESS],
+    instanceField: "id"
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS],
+    instanceField: "id"
+  }],
+  listConfig: {
+    kind: LIST_BY_INSTANCE_ROLE_LOOKUP
+  },
+  subModel: {
+    kind: CONDITIONALLY_TRANSITIVE,
+    parentType: "Contract"
+  },
+  autoCreateAdminRole: true
+)
+@key(name: "byRootID", fields: ["rootID", "id"])
 {
-  id: ID! # template-
+  id: ID! # parentID:template-
+  rootID: ID @ReadOnly
   name: String!
   description: String
   header: ID
   sections: [TemplateSection!]!
   footer: ID
   annexes: [TemplateSection!]!
-  originalTemplateID: ID
+  createdBy: ID @ReadOnly @Set(value: "$ctx.identity.sub")
+
+  # On the case of a copy
+  originalTemplateID: ID @ReadOnly # Set by a lambda
   # originalTemplate: Template @connection(fields: ["originalTemplateID"])
-  createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -277,33 +383,39 @@ enum ContractStatus {
 
 type Contract
 @model
-@CustomAuth(rules: [{
-  actions: [CREATE],
-  kind: ORGANISATION_ROLE,
-  allowedRoles: [CREATING_ACCESS, ADMIN_ACCESS]
-}, {
-  actions: [UPDATE],
-  kind: INSTANCE_ROLE,
-  allowedRoles: [EDITING_ACCESS, ADMIN_ACCESS]
-  instanceField: "instanceID"
-}, {
-  actions: [DELETE],
-  kind: INSTANCE_ROLE,
-  allowedRoles: [ADMIN_ACCESS]
-  instanceField: "instanceID"
-}, {
-  actions: [GET, LIST, SUBSCRIPTION]
-  kind: INSTANCE_ROLE,
-  allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS]
-  instanceField: "instanceID"
-}])
+@CustomAuth(
+  rules: [{
+    actions: [CREATE],
+    kind: ORGANISATION_ROLE,
+    allowedRoles: [CREATING_ACCESS, ADMIN_ACCESS],
+  }, {
+    actions: [UPDATE],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [EDITING_ACCESS, ADMIN_ACCESS],
+    instanceField: "id"
+  }, {
+    actions: [DELETE],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [ADMIN_ACCESS],
+    instanceField: "id"
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS],
+    instanceField: "id"
+  }],
+  listConfig: {
+    kind: LIST_BY_INSTANCE_ROLE_LOOKUP
+  },
+  autoCreateAdminRole: true
+)
 {
   id: ID! # contract-
   name: String!
   status: ContractStatus!
   fieldsResponses: AWSJSON!
   additionalDocuments: [File!]!
-  createdBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
+  createdBy: ID @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -311,6 +423,7 @@ type Contract
 ##          Instance Roles
 ##########################################################
 union Instance = Template | Contract
+enum InstanceTypeEnum { Template, Contract }
 
 enum InstanceRoleEnum {
   NO_ACCESS
@@ -319,30 +432,45 @@ enum InstanceRoleEnum {
   ADMIN_ACCESS
 }
 
-type InstanceRole
-@model
-@CustomAuth(rules: [{
-  actions: [CREATE, UPDATE, DELETE],
-  kind: INSTANCE_ROLE,
-  allowedRoles: [ADMIN_ACCESS]
-  instanceField: "instanceID"
-}, {
-  actions: [GET, LIST, SUBSCRIPTION]
-  kind: INSTANCE_ROLE,
-  allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS]
-  instanceField: "instanceID"
-}])
-@key(fields: ["instanceID", "entityID"])
-{
+type ParentInstanceRole {
+  instanceType: InstanceTypeEnum!
   instanceID: ID!
   # instance: Instance! @connection(fields: ["instanceID"])
   entityID: ID!
+}
+
+type InstanceRole
+@model
+@CustomAuth(
+  rules: [{
+    actions: [CREATE, UPDATE, DELETE],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [ADMIN_ACCESS],
+    instanceField: "instanceID"
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS],
+    instanceField: "instanceID"
+  }],
+  #  listConfig: {
+  #    kind: DIRECT_ROLE
+  #  }
+)
+@key(fields: ["instanceID", "entityID"])
+@key(name: "instanceLookupByKind", fields: ["organisationID", "instanceType"])
+{
+  id: ID! # TODO: Remove this attribute
+  instanceType: InstanceTypeEnum! @ReadOnly
+  instanceID: ID! @ReadOnly
+  # instance: Instance! @connection(fields: ["instanceID"])
+  entityID: ID! @ReadOnly
   # entity: Entity! @connection(fields: ["entityID"])
   # organisationID used for distinguishe who is visible externally
-  organisationID: ID @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]", "null"])
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.stash.userData.currentOrganisationID", "__EVERYONE__"])
   # organisation: Organisation @connection(fields: ["organisationID"])
   role: InstanceRoleEnum!
-  addedBy: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
+  addedBy: ID @ReadOnly @Set(value: "$ctx.identity.sub")
 }
 
 
@@ -353,38 +481,34 @@ union CommentInstance = Template | Contract | SectionText | SectionFile | InputF
 
 type Comment
 @model
-@CustomAuth(rules: [{
-  actions: [CREATE],
-  kind: INSTANCE_ROLE,
-  allowedRoles: [COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS]
-  instanceField: "instanceID"
-}, {
-  actions: [UPDATE, DELETE],
-  kind: INSTANCE_ROLE,
-  allowedRoles: [ADMIN_ACCESS]
-  instanceField: "instanceID"
-}, {
-  actions: [GET, LIST, SUBSCRIPTION]
-  kind: INSTANCE_ROLE,
-  allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS]
-  instanceField: "instanceID"
-}])
-@key(name: "byInstanceID", fields: ["instanceID", "organisationID"])
+@CustomAuth(
+  rules: [{
+    actions: [CREATE],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS],
+    instanceField: "instanceID"
+  }, {
+    actions: [UPDATE, DELETE],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [ADMIN_ACCESS],
+    instanceField: "instanceID"
+  }, {
+    actions: [GET, LIST, SUBSCRIPTION],
+    kind: INSTANCE_ROLE,
+    allowedRoles: [VIEWING_ACCESS, COMMENTING_ACCESS, EDITING_ACCESS, ADMIN_ACCESS],
+    instanceField: "instanceID"
+  }]
+)
+@key(name: "byInstanceID", fields: ["instanceID", "id"])
 {
   id: ID! # comment-
-  userID: ID! @ReadOnly @Set(value: "$ctx.identity.sub")
+  userID: ID @ReadOnly @Set(value: "$ctx.identity.sub")
   # user: User! @connection(fields: ["userID"])
   instanceID: ID! @ReadOnly
   # instance: CommentInstance! @connection(fields: ["instanceID"])
   # organisationID used for distinguish inter and external comments
-  organisationID: ID @ReadOnly @Check(values: ["$ctx.identity.claims[\"custom:currentOrganisation\"]", "null"])
+  organisationID: ID! @ReadOnly @Check(values: ["$ctx.stash.userData.currentOrganisationID", "__EVERYONE__"])
   # organisation: Organisation @connection(fields: ["organisationID"])
   text: String!
 }
-
-
-##########################################################
-##          Activity Feed
-##########################################################
-
 
