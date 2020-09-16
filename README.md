@@ -8,8 +8,10 @@ Issues:
 - Connections cause issues (and probably not needed because resolved in backend and not in frontend by DataStore)
 - @auth not enough for user management system
 - DeltaSync Query + Subscriptions work only on the whole table
-
-[Investigations & Tries:](#investigations--tries)
+- And basically what you can find on the repos opened by me
+  - https://github.com/aws-amplify/amplify-cli/issues/created_by/Hideman85
+  - https://github.com/aws-amplify/amplify-js/issues/created_by/Hideman85
+- There is my [Investigations & Tries](#investigations--tries)
 
 ## Adding API
 ### `amplify init`
@@ -100,10 +102,11 @@ Deployed
 - Click on "Create comment"
 
 Issues:
-- DataStore failed to handle models with hash and range key as primary key [6730](https://github.com/aws-amplify/amplify-js/issues/6730)
+- DataStore failed to handle models with hash and range key as primary key [#6730](https://github.com/aws-amplify/amplify-js/issues/6730)
 - DataStore failed to handle recursive models like tree [#6736](https://github.com/aws-amplify/amplify-js/issues/6736)
 - DataStore failed to handle optional attributes [#6744](https://github.com/aws-amplify/amplify-js/issues/6744)
 - DataStore should automatically fill createdAt and updatedAt [#6758](https://github.com/aws-amplify/amplify-js/issues/6758)
+- DataStore should automatically fill createdAt and updatedAt [#6759](https://github.com/aws-amplify/amplify-js/issues/6759)
 
 ## Cleanup `amplify delete`
 
@@ -112,8 +115,6 @@ Issues:
 Started the implementation of a custom transformer for applying additional transformations for our role checking for authorizing a actions.
 
 The code can be found there: https://github.com/Hideman85/amplify-cli/tree/master/packages/graphql-customauth-transformer
-
-No need to build the whole amplify-cli because the actual implementation already support the addition of custom transformer (even if it's not really documented but by looking in the code we can found it).
 
 ### Enabling the custom transformer
 After cloning and compiling the transformer we just need to add one config in the file `amplify/backend/api/testapp/transform.conf.json`:
