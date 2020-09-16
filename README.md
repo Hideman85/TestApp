@@ -99,14 +99,14 @@ Deployed
 - `npm run start`
 - Creating a user
 - Login in
-- Click on "Create comment"
+- Play around
 
 Issues:
 - DataStore failed to handle models with hash and range key as primary key [#6730](https://github.com/aws-amplify/amplify-js/issues/6730)
 - DataStore failed to handle recursive models like tree [#6736](https://github.com/aws-amplify/amplify-js/issues/6736)
 - DataStore failed to handle optional attributes [#6744](https://github.com/aws-amplify/amplify-js/issues/6744)
 - DataStore should automatically fill createdAt and updatedAt [#6758](https://github.com/aws-amplify/amplify-js/issues/6758)
-- DataStore should automatically fill createdAt and updatedAt [#6759](https://github.com/aws-amplify/amplify-js/issues/6759)
+- DataStore should handle empty string in frontend before calling backend [#6759](https://github.com/aws-amplify/amplify-js/issues/6759)
 
 ## Cleanup `amplify delete`
 
@@ -257,4 +257,5 @@ Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
   -  **[Solved]** Addition in the CLI of a step `stack(...)` to able transformer to modify nested stacks
 
 - What about DynamoDB streams + Custom WebSocket API for subscriptions?
+  
   I was wondering if we can find a workaround with the combination of the WebSocket API and DynamoDB streams. My though was to replace the current WebSocket endpoint (that target AppSync service) to a WebSocket API and having a lambda that listening changes on all tables (through streams) to send the change to only the connected clients that have access to.
