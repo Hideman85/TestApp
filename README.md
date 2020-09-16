@@ -253,7 +253,7 @@ Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
   resolver.DependsOn.push(pipelineFunctionID)
   ```
   - More tricky stuff, all generated nested stacks need to dependsOn the stack CommonPipelineFunctions but it looks like the stacks doe not exist yet even in the `after(ctx: TransformerContext)` of the GraphQL transformer
-  -  **[Solved]** Addition in the CLI of a step `stack(...)` to able transfromer to modify nested stacks
+  -  **[Solved]** Addition in the CLI of a step `stack(...)` to able transformer to modify nested stacks
 
 - What about DynamoDB streams + Custom WebSocket API for subscriptions?
   I was wondering if we can find a workaround with the combination of the WebSocket API and DynamoDB streams. My though was to replace the current WebSocket endpoint (that target AppSync service) to a WebSocket API and having a lambda that listening changes on all tables (through streams) to send the change to only the connected clients that have access to.
