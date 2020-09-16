@@ -1,16 +1,15 @@
 # Test app using AWS AppSync & DataStorage
 
 ## GraphQL schema
-[schema.graphql](schema.graphql)
+[schemaWithCustomAuth.graphql](schemaWithCustomAuth.graphql)
 
 Issues:
 - No support of Union (nor possibilities to manage IDs ourself)
-- Connections cause issues
+- Connections cause issues (and probably not needed because resolved in backend and not in frontend by DataStore)
 - @auth not enough for user management system
-- Frontend issue, the first try with DataStore come to an infinite loop
+- DeltaSync Query + Subscriptions work only on the whole table
 
 [Investigations & Tries:](#investigations--tries)
-- Creating a @CustomAuth a directive with a custom GrapQL transformer for AmplifyCLI
 
 ## Adding API
 ### `amplify init`
@@ -61,7 +60,7 @@ Use a Cognito user pool configured as a part of this project.
 ? Configure conflict detection? Yes
 ? Select the default resolution strategy Auto Merge
 ? Do you have an annotated GraphQL schema? Yes
-? Provide your schema file path: schema.graphql
+? Provide your schema file path: schemaWithCustomAuth.graphql
 
 - schema.graphql contains basic data structure without any authorization restriction
 - schemaWithCustomAuth.graphql contains also custom GraphQL directives and tranformers
@@ -100,21 +99,11 @@ Deployed
 - Login in
 - Click on "Create comment"
 
-```
-Error saving comment InternalError: "too much recursion"
-    isGraphQLScalarType types.ts:126
-    result utils.ts:82
-    getScalarFields utils.ts:80
-    generateSelectionSet utils.ts:57
-    getNonModelFields utils.ts:143
-    getNonModelFields utils.ts:137
-    getNonModelFields utils.ts:129
-    generateSelectionSet utils.ts:58
-    getNonModelFields utils.ts:143
-    getNonModelFields utils.ts:137
-    getNonModelFields utils.ts:129
-    generateSelectionSet utils.ts:58
-```
+Issues:
+- DataStore failed to handle models with hash and range key as primary key [6730](https://github.com/aws-amplify/amplify-js/issues/6730)
+- DataStore failed to handle recursive models like tree [#6736](https://github.com/aws-amplify/amplify-js/issues/6736)
+- DataStore failed to handle optional attributes [#6744](https://github.com/aws-amplify/amplify-js/issues/6744)
+- DataStore should automatically fill createdAt and updatedAt [#6758](https://github.com/aws-amplify/amplify-js/issues/6758)
 
 ## Cleanup `amplify delete`
 
@@ -201,6 +190,8 @@ Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
 - How to efficiently return only items that the user has access to for a list & sync queries?
   - Fetching the table (scan) and filtering out the non access item is inefficient (currently made with the actual @auth)
   - Maybe using BatchGetItem?
+  - For the list query I use a combination of Query on index and BatchGet for having only items
+
 - How to manage subscriptions correctly (with no security issues)?
   it can be a bit tricky for example:
     
@@ -211,7 +202,7 @@ Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
   > - For all user that have still access to the document they should get the information that a user access has been removed
   > - The user that just be denied should get the information remove from your store the ObjectA and attached roles
   > - And of course that information should not be sent to other subscribers that don't have any access to that object
-    
+
 - How to get access to the API ID and the env inside mapping template for a building the generated table name for a BatchGetItem operation resolver?
   - [Doc about $ctx values](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-context-reference.html)
   - [Doc about BatchGetItem](https://docs.aws.amazon.com/appsync/latest/devguide/resolver-mapping-template-reference-dynamodb.html#aws-appsync-resolver-mapping-template-reference-dynamodb-batch-get-item)
@@ -262,3 +253,7 @@ Linked issue: https://github.com/aws-amplify/amplify-cli/issues/5119
   resolver.DependsOn.push(pipelineFunctionID)
   ```
   - More tricky stuff, all generated nested stacks need to dependsOn the stack CommonPipelineFunctions but it looks like the stacks doe not exist yet even in the `after(ctx: TransformerContext)` of the GraphQL transformer
+  -  **[Solved]** Addition in the CLI of a step `stack(...)` to able transfromer to modify nested stacks
+
+- What about DynamoDB streams + Custom WebSocket API for subscriptions?
+  I was wondering if we can find a workaround with the combination of the WebSocket API and DynamoDB streams. My though was to replace the current WebSocket endpoint (that target AppSync service) to a WebSocket API and having a lambda that listening changes on all tables (through streams) to send the change to only the connected clients that have access to.
